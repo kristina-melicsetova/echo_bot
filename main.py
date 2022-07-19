@@ -1,13 +1,21 @@
-from requests import get
+import asyncio
+from aiogram import Bot, Dispatcher, executor
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-api_req = 'https://api.telegram.org/bot5373817312:AAFy7jBOLSXJgwyaHDjsuwbryHYj-w5FTOY'# ссылка на бота
+from config import BOT_TOKEN
 
-updates = get(api_req + '/getUpdates?offset=-1').json() # получаем последнее сообщение и форматируем его в json
+loop = asyncio.new_event_loop()
+bot = Bot(BOT_TOKEN, parse_mode='HTML')
+storage = MemoryStorage()
+dp = Dispatcher(bot, loop=loop, storage=storage)
 
-print(updates)
 
-m = updates['result'][0]['message']
+async def shutdown(dp):
+    await storage.close()
+    await bot.close
 
-chat_id = m['from']['id']
-text = m['text']
-send_msg = get(api_req + f'/sendMessage?chat_id={chat_id}&text={text}')# ответ бота
+
+if __name__ == '__main__':
+    from handlers import dp, send_hello
+
+    executor.start_polling(dp, on_startup=send_hello, on_shutdown=shutdown)
